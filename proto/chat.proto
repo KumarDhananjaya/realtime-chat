@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "realtime-chat/gen/go;chat";
+
+// Message for sending a chat message
+message ChatMessage {
+  string user = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}
+
+// A message that can be either a join notification or a chat message
+message StreamMessage {
+  oneof event {
+    ChatMessage message = 1;
+  }
+}
+
+// Service definition
+service ChatService {
+  // Bi-directional stream for chat
+  rpc ChatStream(stream StreamMessage) returns (stream StreamMessage);
+}
