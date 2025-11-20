@@ -6,7 +6,6 @@ import (
 	"time"
 
 	pb "realtime-chat/backend/gen/go"
-	// All unused imports have now been removed.
 )
 
 // connection represents a single client connection with its stream.
