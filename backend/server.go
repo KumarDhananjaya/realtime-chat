@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	pb "realtime-chat/gen/go"
+	pb "realtime-chat/backend/gen/go"
 	// All unused imports have now been removed.
 )
 

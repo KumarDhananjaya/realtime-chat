@@ -11,16 +11,6 @@
 /* eslint-disable */
 // @ts-nocheck
 
-var jspb = require('google-protobuf');
-var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
-
 goog.exportSymbol('proto.chat.ChatMessage', null, global);
 goog.exportSymbol('proto.chat.StreamMessage', null, global);
 goog.exportSymbol('proto.chat.StreamMessage.EventCase', null, global);
@@ -432,4 +422,3 @@ proto.chat.StreamMessage.prototype.hasMessage = function() {
 };
 
 
-goog.object.extend(exports, proto.chat);
