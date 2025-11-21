@@ -6,9 +6,9 @@ import { ChatScreen } from './components/ChatScreen';
 import { createPromiseClient } from "@bufbuild/connect";
 import { createGrpcWebTransport } from "@bufbuild/connect-web";
 
-// FIX: All gRPC-related imports now correctly point to the '/src/gen/' folder
-import { ChatService } from './gen/chat_connect';
-import { ChatMessage, StreamMessage, SubscribeRequest } from './gen/chat_pb';
+// Correct imports from the generated grpc folder
+import { ChatService } from './grpc/chat_connect';
+import { ChatMessage, SubscribeRequest } from './grpc/chat_pb';
 
 // Create a transport and a client.
 const transport = createGrpcWebTransport({
@@ -26,32 +26,36 @@ function App() {
     setIsJoined(true);
   };
 
-  // This useEffect hook subscribes to the message stream when the user is joined
+  // This useEffect hook manages the server stream
   useEffect(() => {
     if (isJoined && username) {
       const controller = new AbortController();
 
-      async function subscribeToMessages() {
-        // The 'SubscribeRequest' class is now correctly imported
-        const request = new SubscribeRequest({ user: username });
+      async function startSubscription() {
         try {
-          const stream = client.subscribe(request, { signal: controller.signal });
+          const request = new SubscribeRequest({ user: username });
+          const stream = client.subscribeMessages(request, { signal: controller.signal });
+
           for await (const res of stream) {
-            if (res.event.case === "message") {
-              setMessages(prev => [...prev, res.event.value]);
+            if (res.event.case === "message" && res.event.value) {
+              const msg = res.event.value;
+              setMessages(prev => [...prev, msg]);
             }
           }
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.error("Subscription failed:", err);
-            alert("Connection to the server was lost.");
-            setIsJoined(false);
-            setMessages([]);
+          // Ignore abort errors as they are expected when leaving/unmounting
+          if (err instanceof Error && err.name !== 'AbortError') {
+            if ((err as any).name !== 'AbortError') {
+              console.error("Stream error:", err);
+              alert("Connection to the server was lost.");
+              setIsJoined(false);
+              setMessages([]);
+            }
           }
         }
       }
 
-      subscribeToMessages();
+      startSubscription();
 
       return () => {
         controller.abort();
@@ -62,14 +66,13 @@ function App() {
   const handleSendMessage = async (messageText: string) => {
     if (!username) return;
 
-    // The 'ChatMessage' class is now correctly imported
-    const request = new ChatMessage({
+    const chatMsg = new ChatMessage({
       user: username,
       message: messageText,
     });
 
     try {
-      await client.sendMessage(request);
+      await client.sendMessage(chatMsg);
     } catch (err) {
       console.error("Failed to send message:", err);
       alert("Could not send message.");
@@ -79,7 +82,11 @@ function App() {
   return (
     <main className="bg-gray-100">
       {isJoined ? (
-        <ChatScreen username={username} messages={messages.map(m => m.toJson()) as any} onSendMessage={handleSendMessage} />
+        <ChatScreen username={username} messages={messages.map(m => ({
+          user: m.user,
+          message: m.message,
+          timestamp: Number(m.timestamp)
+        }))} onSendMessage={handleSendMessage} />
       ) : (
         <JoinScreen onJoin={handleJoin} />
       )}

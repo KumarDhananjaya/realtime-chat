@@ -1,11 +1,14 @@
-// frontend/src/components/ChatScreen.tsx
 import { useState, useRef, useEffect } from "react";
-// Import the TYPE ONLY. This avoids bundling the whole module.
-import type { ChatMessage as ChatMessageType } from "../grpc/chat_pb.d";
+
+interface Message {
+  user: string;
+  message: string;
+  timestamp: number;
+}
 
 interface ChatScreenProps {
   username: string;
-  messages: ChatMessageType.AsObject[];
+  messages: Message[];
   onSendMessage: (message: string) => void;
 }
 
@@ -52,11 +55,10 @@ export function ChatScreen({ username, messages, onSendMessage }: ChatScreenProp
 
                   {/* Message Bubble */}
                   <div
-                    className={`rounded-2xl p-3 max-w-xs md:max-w-md ${
-                      isCurrentUser
+                    className={`rounded-2xl p-3 max-w-xs md:max-w-md ${isCurrentUser
                         ? "bg-blue-600 text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
-                    }`}
+                      }`}
                   >
                     {!isCurrentUser && <p className="text-sm font-bold mb-1 text-gray-600">{msg.user}</p>}
                     <p className="text-base">{msg.message}</p>
