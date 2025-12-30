@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "realtime-chat/backend/gen/go;chat";
+
+import "google/protobuf/empty.proto";
+
+// Message for sending a chat message
+message ChatMessage {
+  string user = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}
+
+// Request to subscribe to messages
+message SubscribeRequest {
+  string user = 1;
+}
+
+// A message that can be either a join notification or a chat message
+message StreamMessage {
+  oneof event {
+    ChatMessage message = 1;
+  }
+}
+
+// Service definition
+service ChatService {
+  // Unary call for sending messages (Client -> Server)
+  rpc SendMessage(ChatMessage) returns (google.protobuf.Empty);
+
+  // Server streaming for receiving messages (Server -> Client)
+  rpc SubscribeMessages(SubscribeRequest) returns (stream StreamMessage);
+}
